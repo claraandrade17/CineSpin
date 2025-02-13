@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineSpin - AI Movie Picker</title>
+    <link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<header>
+    <h1>CineSpin 🎬</h1>
+    <p>Your AI-powered Movie Picker</p>
+</header>
+
+<main>
+    <section class="input-output-box">
+        <h2>What are you in the mood for?</h2>
+        <select id="mood-select">
+            <option value="random">Surprise Me!</option>
+            <option value="happy">Happy & Feel-Good</option>
+            <option value="thriller">Thriller & Suspense</option>
+            <option value="action">Action & Adventure</option>
+            <option value="sci-fi">Sci-Fi & Fantasy</option>
+            <option value="drama">Drama & Emotional</option>
+            <option value="horror">Horror & Spooky</option>
+            <option value="comedy">Comedy & Fun</option>
+        </select>
+        <button id="get-movie">Get Recommendation!</button>
+    
+
+        <div id="movie-container" class="hidden">
+            <h3>Recommended Movie:</h3>
+            <h3 class="movie-title"><span id="movie-name"></span> <span class="movie-year"></span></h3>
+            <p class="movie-description" id="movie-description"></p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>Crafted with ❤️ & 🎬 for movie lovers</p>
+</footer>
+
+<script src="src/index.jsx"></script> 
+</body>
+</html>
