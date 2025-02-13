@@ -1,73 +1,61 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const API_KEY = "f97aa643aaeftd0ccfa0b4477fof85ca"; 
-    const moodSelect = document.getElementById("mood-select");
-    const getMovieBtn = document.getElementById("get-movie");
+document.getElementById("ai-form").addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const API_KEY = "f97aa643aaeftd0ccfa0b4477fof85ca";
+    const userInput = document.getElementById("user-input").value;
+    const prompt = `Give me a movie recommendation based on: "${userInput}"`;
     const movieContainer = document.getElementById("movie-container");
 
+  
+    movieContainer.innerHTML = `
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Finding the perfect movie...</p>
+    `;
+    movieContainer.classList.remove("hidden");
 
-    movieContainer.classList.add("hidden");
-
-    getMovieBtn.addEventListener("click", async () => {
-        movieContainer.classList.add("hidden"); 
-
-        const mood = moodSelect.value;
+    try {
         
+        const response = await fetch(`https://api.shecodes.io/ai/v1/generate?prompt=${encodeURIComponent(prompt)}&key=${API_KEY}`);
+        const data = await response.json();
 
-        movieContainer.classList.remove("hidden");
-        movieContainer.innerHTML = `
-            <div class="loading-spinner"></div>
-            <p class="loading-text">Finding the perfect movie...</p>
-        `;
+        console.log("API Response:", data); 
 
-        const prompt = `Recommend a movie for someone in the mood for ${mood} movies. 
-        Format your response **exactly** like this:
-        Title: "Movie Name"
-        Year: (YYYY)
-        Description: A **brief but complete** summary (maximum 3 full sentences).`;
+        if (data && data.answer) {
+            let aiText = data.answer;
 
-        const apiUrl = `https://api.shecodes.io/ai/v1/generate?prompt=${encodeURIComponent(prompt)}&key=${API_KEY}`;
+            
+            aiText = aiText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
 
-        try {
-            const response = await fetch(apiUrl);
-            const data = await response.json();
+            
+            const titleMatch = aiText.match(/<strong>(.*?)<\/strong>/); 
+            const yearMatch = aiText.match(/\((\d{4})\)/);
 
-            if (data && data.answer) {
-                let movieText = data.answer.trim();
+            const title = titleMatch ? titleMatch[1] : "Unknown Movie";
+            const year = yearMatch ? yearMatch[1] : "";
 
-   
-                const titleMatch = movieText.match(/Title:\s*["“]([^"”]+)["”]/);
-                const yearMatch = movieText.match(/Year:\s*\(?(\d{4})\)?/);
-                const descriptionMatch = movieText.match(/Description:\s*(.+)/);
+            
+            aiText = aiText.replace(/\bI recommend ,\s?/i, "I recommend ").trim();
 
-                let movieTitle = titleMatch ? titleMatch[1] : "Unknown Movie";
-                let movieYearText = yearMatch ? `(${yearMatch[1]})` : "";
-                let movieDescriptionText = descriptionMatch ? descriptionMatch[1] : "No description available.";
+            let sentences = aiText.split(". ");
+            let shortDescription = sentences.slice(0, 3).join(". ");
 
-               
-                const maxLength = 200; 
-                if (movieDescriptionText.length > maxLength) {
-                    let trimmedText = movieDescriptionText.substring(0, maxLength);
-                    const lastPeriod = trimmedText.lastIndexOf(".");
-                    if (lastPeriod !== -1) {
-                        movieDescriptionText = trimmedText.substring(0, lastPeriod + 1); 
-                    } else {
-                        movieDescriptionText = trimmedText; 
-                    }
-                }
-
-
-                setTimeout(() => {
-                    movieContainer.innerHTML = `
-                        <h3 class="movie-title">${movieTitle} <span class="movie-year">${movieYearText}</span></h3>
-                        <p class="movie-description">${movieDescriptionText}</p>
-                    `;
-                }, 1500);
-            } else {
-                movieContainer.innerHTML = `<p class='error'>Oops! Couldn't fetch a recommendation. Try again.</p>`;
+            
+            if (!shortDescription.endsWith(".")) {
+                shortDescription += ".";
             }
-        } catch (error) {
-            console.error("Error fetching movie recommendation:", error);
-            movieContainer.innerHTML = `<p class='error'>Error: Unable to fetch a movie recommendation.</p>`;
+
+            
+            movieContainer.innerHTML = `
+                <h2 class="movie-title">${title}</h2>
+                <p class="movie-year">${year ? `(${year})` : ""}</p>
+                <p class="movie-description">${shortDescription}</p>
+            `;
+            movieContainer.classList.add("show");
+        } else {
+            movieContainer.innerHTML = `<p class="error">Sorry, I couldn't extract a valid movie recommendation.</p>`;
         }
-    });
+    } catch (error) {
+        console.error("Fetch error:", error);
+        movieContainer.innerHTML = `<p class="error">Something went wrong. Please try again.</p>`;
+    }
 });
